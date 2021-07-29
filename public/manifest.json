@@ -1,0 +1,8 @@
+{
+  "short_name": "REST Easy",
+  "name": "REST API validation and testing",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
