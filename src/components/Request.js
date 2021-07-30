@@ -13,13 +13,19 @@ import Accordion from "@material-ui/core/Accordion";
 import AccordionSummary from "@material-ui/core/AccordionSummary";
 import AccordionDetails from "@material-ui/core/AccordionDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import Multipart from "./Multipart";
 
-function Request() {
+import FormData from "form-data";
+import qs from "qs";
+
+import Multipart from "./Multipart";
+import URLEncoded from "./URLEncoded";
+
+function Request(props) {
   const [req_type, set_req_type] = useState("");
   const [req_url, set_req_url] = useState("");
   const [body_type, set_body_type] = useState("multipart");
   const [multipart, set_multipart] = useState([{ name: "", value: "" }]);
+  const [urlencoded, set_urlencoded] = useState([{ name: "", value: "" }]);
 
   const req_type_change = (e) => {
     set_req_type(e.target.value);
@@ -53,12 +59,38 @@ function Request() {
     set_multipart(cur_multipart);
   };
 
+  const urlencoded_handler = (e, i, name_or_value, type) => {
+    let cur_urlencoded = [...urlencoded];
+
+    switch (type) {
+      case "change":
+        cur_urlencoded[i][name_or_value] = e.target.value;
+        break;
+      case "add":
+        cur_urlencoded.push({ name: "", value: "" });
+        break;
+      case "delete":
+        cur_urlencoded.splice(i, 1);
+        break;
+      default:
+        break;
+    }
+
+    set_urlencoded(cur_urlencoded);
+  };
+
   const get_body_jsx = () => {
     let return_body;
     switch (body_type) {
       case "multipart":
         return_body = (
           <Multipart state={multipart} handler={multipart_handler} />
+        );
+        break;
+
+      case "urlencoded":
+        return_body = (
+          <URLEncoded state={urlencoded} handler={urlencoded_handler} />
         );
         break;
 
@@ -71,7 +103,41 @@ function Request() {
   };
 
   const handle_submit = () => {
-    console.log(multipart);
+    let req_config = {};
+    req_config["method"] = req_type;
+    req_config["url"] = req_url;
+
+    var req_data;
+
+    switch (body_type) {
+      case "multipart":
+        req_config["headers"] = { "Content-Type": "multipart/form-data" };
+
+        req_data = new FormData();
+        multipart.forEach((element) => {
+          req_data.append(element.name, element.value);
+        });
+        break;
+
+      case "urlencoded":
+        req_config["headers"] = {
+          "Content-Type": "application/x-www-form-urlencoded",
+        };
+
+        let urlencoded_object = {};
+        urlencoded.forEach((obj) => {
+          urlencoded_object[obj["name"]] = obj["value"];
+        });
+        req_data = qs.stringify(urlencoded_object);
+        break;
+
+      default:
+        break;
+    }
+
+    req_config["data"] = req_data;
+
+    props.handler(req_config);
   };
 
   return (
@@ -134,7 +200,7 @@ function Request() {
               >
                 <ListSubheader>Structured</ListSubheader>
                 <MenuItem value="multipart">Multipart form</MenuItem>
-                <MenuItem value="urlenc">Form URL encoded</MenuItem>
+                <MenuItem value="urlencoded">Form URL encoded</MenuItem>
                 <ListSubheader>Text</ListSubheader>
                 <MenuItem value="json">JSON</MenuItem>
               </Select>
