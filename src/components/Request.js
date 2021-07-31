@@ -24,7 +24,9 @@ function Request(props) {
   const [req_type, set_req_type] = useState("");
   const [req_url, set_req_url] = useState("");
   const [body_type, set_body_type] = useState("multipart");
-  const [multipart, set_multipart] = useState([{ name: "", value: "" }]);
+  const [multipart, set_multipart] = useState([
+    { name: "", value: "", type: "text" },
+  ]);
   const [urlencoded, set_urlencoded] = useState([{ name: "", value: "" }]);
 
   const req_type_change = (e) => {
@@ -39,18 +41,21 @@ function Request(props) {
     set_body_type(e.target.value);
   };
 
-  const multipart_handler = (e, i, name_or_value, type) => {
+  const multipart_handler = (e, i, name_or_value, action_type, param_type) => {
     let cur_multipart = [...multipart];
 
-    switch (type) {
+    switch (action_type) {
       case "change":
         cur_multipart[i][name_or_value] = e.target.value;
         break;
       case "add":
-        cur_multipart.push({ name: "", value: "" });
+        cur_multipart.push({ name: "", value: "", type: "text" });
         break;
       case "delete":
         cur_multipart.splice(i, 1);
+        break;
+      case "param_type":
+        cur_multipart[i]["type"] = param_type;
         break;
       default:
         break;
