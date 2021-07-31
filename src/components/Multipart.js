@@ -14,11 +14,18 @@ import { makeStyles } from "@material-ui/core/styles";
 const useStyles = makeStyles(() => ({
   icon: {
     right: "14%",
+    top: "16%",
   },
   root: {
     "&:focus": {
-      backgroundColor: "#fff",
+      backgroundColor: "rgba(255, 255, 255, 0)",
+      borderRadius: "100%",
     },
+    "&:hover": {
+      backgroundColor: "rgba(0, 0, 0, 0.06)",
+      borderRadius: "100%",
+    },
+    padding: "12px",
   },
 }));
 
@@ -97,7 +104,7 @@ function Multipart(props) {
           item
           xs={1}
           alignContent={obj["type"] !== "text" ? "center" : "center"}
-          style={{ marginTop: "5px", paddingLeft: "10px" }}
+          style={{ marginTop: "10px", paddingLeft: "10px" }}
         >
           <FormControl>
             <Select
@@ -138,8 +145,15 @@ function Multipart(props) {
             onClick={(e) => {
               props.handler(e, i, null, "delete");
             }}
+            onMouseOver={(e) => {
+              console.log(e.target.style);
+            }}
           >
-            <DeleteIcon />
+            <DeleteIcon
+              onMouseOver={(e) => {
+                console.log(e.target.style);
+              }}
+            />
           </IconButton>
         </Grid>
       </Grid>
