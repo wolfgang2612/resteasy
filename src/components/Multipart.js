@@ -1,48 +1,81 @@
-import React from "react";
+import React, { useState } from "react";
 
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 import IconButton from "@material-ui/core/IconButton";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
+import EditIcon from "@material-ui/icons/Edit";
+import PublishIcon from "@material-ui/icons/Publish";
 import MenuItem from "@material-ui/core/MenuItem";
 import Button from "@material-ui/core/Button";
 import { FormControl, Select } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
+import Modal from "@material-ui/core/Modal";
 
-const useStyles = makeStyles(() => ({
-  icon: {
-    right: "14%",
+const useStyles = makeStyles((theme) => ({
+  select_root: {
+    paddingBottom: "2px",
+  },
+  select_icon: {
+    right: "16%",
     top: "16%",
   },
-  root: {
-    "&:focus": {
-      backgroundColor: "rgba(255, 255, 255, 0)",
-      borderRadius: "100%",
-    },
-    "&:hover": {
-      backgroundColor: "rgba(0, 0, 0, 0.06)",
-      borderRadius: "100%",
-    },
-    padding: "12px",
+  modal_body: {
+    position: "relative",
+    width: "40%",
+    backgroundColor: theme.palette.background.paper,
+    border: "2px solid #000",
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
+    top: "40%",
+    left: "30%",
   },
 }));
 
 function Multipart(props) {
   const classes = useStyles();
+  const [open, set_open] = useState(false);
+  const [file_ref, set_file_ref] = useState([null]);
+
+  const modal_open = () => {
+    set_open(true);
+  };
+
+  const modal_close = () => {
+    set_open(false);
+  };
 
   const param_type_change = (e, i, param_type) => {
-    e.preventDefault();
-
-    console.log(i);
-    console.log(param_type);
     if (
       i !== undefined &&
       param_type !== undefined &&
       param_type !== "backdropClick"
     )
       props.handler(null, i, null, "param_type", param_type);
+
+    if (param_type !== "file" && file_ref[i]) {
+      let cur_file_ref = file_ref;
+      cur_file_ref[i] = null;
+      set_file_ref(cur_file_ref);
+      props.handler({ target: { value: null } }, i, "value", "change");
+    } else if (param_type !== "file" && !file_ref[i]) {
+      let cur_value = props.state[i].value;
+      if (param_type === "multiline" && cur_value)
+        props.handler(
+          { target: { value: cur_value.replace("\n", "") } },
+          i,
+          "value",
+          "change",
+        );
+      else
+        props.handler({ target: { value: cur_value } }, i, "value", "change");
+    } else {
+      let cur_file_ref = file_ref;
+      cur_file_ref[i] = React.createRef();
+      set_file_ref(cur_file_ref);
+      props.handler({ target: { value: null } }, i, "value", "change");
+    }
   };
 
   const get_param = (i, p_value) => {
@@ -60,19 +93,79 @@ function Multipart(props) {
           />
         );
       case "multiline":
+        let name_number = i + 1;
         return (
-          <Button
-            variant="outlined"
-            size="small"
-            color="secondary"
-            fullWidth
-            style={{ marginTop: "10px" }}
-          >
-            Edit
-          </Button>
+          <Grid container item>
+            <Button
+              variant="outlined"
+              size="small"
+              color="secondary"
+              fullWidth
+              style={{ marginTop: "7px" }}
+              onClick={modal_open}
+              endIcon={<EditIcon />}
+            >
+              Edit
+            </Button>
+            <Modal open={open} onClose={modal_close}>
+              <div className={classes.modal_body}>
+                <TextField
+                  label={
+                    "Value of name " +
+                    name_number +
+                    ": " +
+                    props.state[i]["name"]
+                  }
+                  fullWidth
+                  multiline
+                  rows={8}
+                  value={p_value}
+                  onChange={(e) => {
+                    props.handler(e, i, "value", "change");
+                  }}
+                />
+              </div>
+            </Modal>
+          </Grid>
         );
       case "file":
-        return "wait2";
+        return (
+          <Grid container item>
+            <input
+              accept="*/*"
+              id={"multi_upload_" + i}
+              type="file"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                props.handler(
+                  { target: { value: e.target.files[0] } },
+                  i,
+                  "value",
+                  "change",
+                );
+              }}
+              ref={file_ref[i]}
+            />
+            <label htmlFor={"multi_upload_" + i} style={{ width: "100%" }}>
+              <Button
+                variant="outlined"
+                color="secondary"
+                size="small"
+                style={{ marginTop: "7px", width: "100%" }}
+                endIcon={<PublishIcon />}
+                component="span"
+              >
+                {file_ref[i].current &&
+                file_ref[i].current.files &&
+                file_ref[i].current.files[0]
+                  ? file_ref[i].current.files[0].name.length < 15
+                    ? file_ref[i].current.files[0].name
+                    : file_ref[i].current.files[0].name.substring(0, 15) + "..."
+                  : "Upload"}
+              </Button>
+            </label>
+          </Grid>
+        );
       default:
         break;
     }
@@ -80,7 +173,14 @@ function Multipart(props) {
 
   let name_value_jsx = props.state.map((obj, i) => {
     return (
-      <Grid container item xs={12} justifyContent="space-evenly" key={i}>
+      <Grid
+        container
+        item
+        xs={12}
+        justifyContent="space-evenly"
+        key={i}
+        spacing={1}
+      >
         <Grid item xs={5}>
           <TextField
             label="Name"
@@ -104,15 +204,13 @@ function Multipart(props) {
           item
           xs={1}
           alignContent={obj["type"] !== "text" ? "center" : "center"}
-          style={{ marginTop: "10px", paddingLeft: "10px" }}
+          style={{ marginTop: "10px" }}
         >
           <FormControl>
             <Select
               id={i + "param_type"}
               value=""
-              disableUnderline
-              classes={classes}
-              IconComponent={MoreVertIcon}
+              classes={{ root: classes.select_root, icon: classes.select_icon }}
             >
               <MenuItem
                 onClick={(e) => {
@@ -144,16 +242,12 @@ function Multipart(props) {
             style={{ marginTop: "10px" }}
             onClick={(e) => {
               props.handler(e, i, null, "delete");
-            }}
-            onMouseOver={(e) => {
-              console.log(e.target.style);
+              let cur_file_ref = file_ref;
+              cur_file_ref.splice(i, 1);
+              set_file_ref(cur_file_ref);
             }}
           >
-            <DeleteIcon
-              onMouseOver={(e) => {
-                console.log(e.target.style);
-              }}
-            />
+            <DeleteIcon />
           </IconButton>
         </Grid>
       </Grid>
@@ -169,6 +263,9 @@ function Multipart(props) {
           style={{ marginTop: "10px" }}
           onClick={(e) => {
             props.handler(e, null, null, "add");
+            let cur_file_ref = file_ref;
+            cur_file_ref.push(null);
+            set_file_ref(cur_file_ref);
           }}
         >
           <AddIcon />
