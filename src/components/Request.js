@@ -8,11 +8,12 @@ import MenuItem from "@material-ui/core/MenuItem";
 import TextField from "@material-ui/core/TextField";
 import FormControl from "@material-ui/core/FormControl";
 import Button from "@material-ui/core/Button";
-import Icon from "@material-ui/core/Icon";
 import Accordion from "@material-ui/core/Accordion";
 import AccordionSummary from "@material-ui/core/AccordionSummary";
 import AccordionDetails from "@material-ui/core/AccordionDetails";
+import Divider from "@material-ui/core/Divider";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import SendIcon from "@material-ui/icons/Send";
 
 import FormData from "form-data";
 import qs from "qs";
@@ -40,7 +41,7 @@ function Request(props) {
   };
 
   const body_type_change = (e) => {
-    set_body_type(e.target.value);
+    if (e.target.value) set_body_type(e.target.value);
   };
 
   const multipart_handler = (e, i, name_or_value, action_type, param_type) => {
@@ -186,7 +187,7 @@ function Request(props) {
         <Button
           variant="contained"
           color="primary"
-          endIcon={<Icon>send</Icon>}
+          endIcon={<SendIcon />}
           fullWidth
           onClick={handle_submit}
         >
@@ -208,11 +209,35 @@ function Request(props) {
                 onChange={body_type_change}
                 style={{ marginBottom: "10px" }}
               >
-                <ListSubheader>Structured</ListSubheader>
+                <ListSubheader
+                  color="primary"
+                  component="span"
+                  style={{ pointerEvents: "none" }}
+                >
+                  Structured
+                </ListSubheader>
                 <MenuItem value="multipart">Multipart form</MenuItem>
                 <MenuItem value="urlencoded">Form URL encoded</MenuItem>
-                <ListSubheader>Text</ListSubheader>
+                <Divider />
+                <ListSubheader
+                  color="primary"
+                  component="span"
+                  style={{ pointerEvents: "none" }}
+                >
+                  Text
+                </ListSubheader>
                 <MenuItem value="json">JSON</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
+                <Divider />
+                <ListSubheader
+                  color="primary"
+                  component="span"
+                  style={{ pointerEvents: "none" }}
+                >
+                  Other
+                </ListSubheader>
+                <MenuItem value="file">File</MenuItem>
+                <MenuItem value="nobody">No body</MenuItem>
               </Select>
               {get_body_jsx()}
             </FormControl>
