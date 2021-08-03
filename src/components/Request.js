@@ -20,6 +20,7 @@ import qs from "qs";
 
 import Multipart from "./Multipart";
 import URLEncoded from "./URLEncoded";
+import TextJson from "./TextJson";
 
 function Request(props) {
   const [req_type, set_req_type] = useState("");
@@ -31,6 +32,12 @@ function Request(props) {
   const [urlencoded, set_urlencoded] = useState([
     { name: "", value: "", type: "text" },
   ]);
+  const [textjson, set_textjson] = useState({
+    value: '{"id": "12"}',
+    error: null,
+    snackbar_open: false,
+  });
+  const [parse_timeout, set_parse_timeout] = useState(null);
 
   const req_type_change = (e) => {
     set_req_type(e.target.value);
@@ -90,6 +97,41 @@ function Request(props) {
     set_urlencoded(cur_urlencoded);
   };
 
+  const textjson_handler = (e, type) => {
+    switch (type) {
+      case "change":
+        if (parse_timeout) clearTimeout(parse_timeout);
+        set_textjson({ value: e.target.value, error: null });
+        let new_parse_timeout = setTimeout(() => {
+          try {
+            JSON.parse(e.target.value);
+          } catch (error) {
+            set_textjson({ value: e.target.value, error: error.message });
+          }
+        }, 1500);
+        set_parse_timeout(new_parse_timeout);
+        break;
+
+      case "stringify":
+        if (textjson.error) {
+          set_textjson({ ...textjson, snackbar_open: true });
+        } else {
+          let beautified_text = JSON.stringify(
+            JSON.parse(textjson.value),
+            null,
+            "\t",
+          );
+          set_textjson({ ...textjson, value: beautified_text });
+        }
+        break;
+      case "close":
+        set_textjson({ ...textjson, snackbar_open: false });
+        break;
+      default:
+        break;
+    }
+  };
+
   const get_body_jsx = () => {
     let return_body;
     switch (body_type) {
@@ -103,6 +145,10 @@ function Request(props) {
         return_body = (
           <URLEncoded state={urlencoded} handler={urlencoded_handler} />
         );
+        break;
+
+      case "json":
+        return_body = <TextJson state={textjson} handler={textjson_handler} />;
         break;
 
       default:

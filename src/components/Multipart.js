@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
     border: "2px solid #000",
     boxShadow: theme.shadows[5],
     padding: theme.spacing(2, 4, 3),
-    top: "40%",
+    top: "30%",
     left: "30%",
   },
 }));
@@ -89,7 +89,9 @@ function Multipart(props) {
           />
         );
       case "multiline":
+        const byteSize = (str) => new Blob([str]).size;
         let name_number = i + 1;
+        let edit_text = p_value ? byteSize(p_value) + " bytes" : "Edit";
         return (
           <Grid container item>
             <Button
@@ -103,7 +105,7 @@ function Multipart(props) {
               }}
               endIcon={<EditIcon />}
             >
-              Edit
+              {edit_text}
             </Button>
             <Modal
               open={open}
@@ -121,7 +123,8 @@ function Multipart(props) {
                   }
                   fullWidth
                   multiline
-                  rows={8}
+                  minRows={8}
+                  maxRows={16}
                   value={p_value}
                   onChange={(e) => {
                     props.handler(e, i, "value", "change");
