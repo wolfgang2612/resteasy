@@ -71,6 +71,7 @@ function URLEncoded(props) {
           />
         );
       case "multiline":
+        const byteSize = (str) => new Blob([str]).size;
         let name_number = i + 1;
         let edit_text = p_value ? byteSize(p_value) + " bytes" : "Edit";
         return (
