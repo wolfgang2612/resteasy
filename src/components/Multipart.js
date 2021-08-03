@@ -38,14 +38,6 @@ function Multipart(props) {
   const [open, set_open] = useState(false);
   const [file_ref, set_file_ref] = useState([null]);
 
-  const modal_open = () => {
-    set_open(true);
-  };
-
-  const modal_close = () => {
-    set_open(false);
-  };
-
   const param_type_change = (e, i, param_type) => {
     if (
       i !== undefined &&
@@ -55,15 +47,17 @@ function Multipart(props) {
       props.handler(null, i, null, "param_type", param_type);
 
     if (param_type !== "file" && file_ref[i]) {
+      // changing from file upload to other file types
       let cur_file_ref = file_ref;
       cur_file_ref[i] = null;
       set_file_ref(cur_file_ref);
       props.handler({ target: { value: null } }, i, "value", "change");
     } else if (param_type !== "file" && !file_ref[i]) {
+      // changing between text and multiline
       let cur_value = props.state[i].value;
       if (param_type === "multiline" && cur_value)
         props.handler(
-          { target: { value: cur_value.replace("\n", "") } },
+          { target: { value: cur_value.replaceAll("\n", "") } },
           i,
           "value",
           "change",
@@ -71,6 +65,7 @@ function Multipart(props) {
       else
         props.handler({ target: { value: cur_value } }, i, "value", "change");
     } else {
+      // changing to file
       let cur_file_ref = file_ref;
       cur_file_ref[i] = React.createRef();
       set_file_ref(cur_file_ref);
@@ -84,7 +79,7 @@ function Multipart(props) {
         return (
           <TextField
             label="Value"
-            id={"multi_value_" + i}
+            id={"multipart_value_" + i}
             value={p_value}
             onChange={(e) => {
               props.handler(e, i, "value", "change");
@@ -102,12 +97,19 @@ function Multipart(props) {
               color="secondary"
               fullWidth
               style={{ marginTop: "7px" }}
-              onClick={modal_open}
+              onClick={() => {
+                set_open(true);
+              }}
               endIcon={<EditIcon />}
             >
               Edit
             </Button>
-            <Modal open={open} onClose={modal_close}>
+            <Modal
+              open={open}
+              onClose={() => {
+                set_open(false);
+              }}
+            >
               <div className={classes.modal_body}>
                 <TextField
                   label={
@@ -133,7 +135,7 @@ function Multipart(props) {
           <Grid container item>
             <input
               accept="*/*"
-              id={"multi_upload_" + i}
+              id={"multipart_upload_" + i}
               type="file"
               style={{ display: "none" }}
               onChange={(e) => {
@@ -146,7 +148,7 @@ function Multipart(props) {
               }}
               ref={file_ref[i]}
             />
-            <label htmlFor={"multi_upload_" + i} style={{ width: "100%" }}>
+            <label htmlFor={"multipart_upload_" + i} style={{ width: "100%" }}>
               <Button
                 variant="outlined"
                 color="secondary"
@@ -184,7 +186,7 @@ function Multipart(props) {
         <Grid item xs={5}>
           <TextField
             label="Name"
-            id={"multi_name_" + i}
+            id={"multipart_name_" + i}
             value={obj.name}
             onChange={(e) => {
               props.handler(e, i, "name", "change");

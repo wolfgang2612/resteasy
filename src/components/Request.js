@@ -27,7 +27,9 @@ function Request(props) {
   const [multipart, set_multipart] = useState([
     { name: "", value: "", type: "text" },
   ]);
-  const [urlencoded, set_urlencoded] = useState([{ name: "", value: "" }]);
+  const [urlencoded, set_urlencoded] = useState([
+    { name: "", value: "", type: "text" },
+  ]);
 
   const req_type_change = (e) => {
     set_req_type(e.target.value);
@@ -64,7 +66,7 @@ function Request(props) {
     set_multipart(cur_multipart);
   };
 
-  const urlencoded_handler = (e, i, name_or_value, type) => {
+  const urlencoded_handler = (e, i, name_or_value, type, param_type) => {
     let cur_urlencoded = [...urlencoded];
 
     switch (type) {
@@ -72,10 +74,13 @@ function Request(props) {
         cur_urlencoded[i][name_or_value] = e.target.value;
         break;
       case "add":
-        cur_urlencoded.push({ name: "", value: "" });
+        cur_urlencoded.push({ name: "", value: "", type: "text" });
         break;
       case "delete":
         cur_urlencoded.splice(i, 1);
+        break;
+      case "param_type":
+        cur_urlencoded[i]["type"] = param_type;
         break;
       default:
         break;
