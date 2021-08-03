@@ -72,6 +72,7 @@ function URLEncoded(props) {
         );
       case "multiline":
         let name_number = i + 1;
+        let edit_text = p_value ? byteSize(p_value) + " bytes" : "Edit";
         return (
           <Grid container item>
             <Button
@@ -85,7 +86,7 @@ function URLEncoded(props) {
               }}
               endIcon={<EditIcon />}
             >
-              Edit
+              {edit_text}
             </Button>
             <Modal
               open={open}
