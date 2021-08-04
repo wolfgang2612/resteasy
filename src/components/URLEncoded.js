@@ -7,20 +7,15 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Button from "@material-ui/core/Button";
 import Modal from "@material-ui/core/Modal";
+
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
+
 import { makeStyles } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
-  select_root: {
-    paddingBottom: "2px",
-  },
-  select_icon: {
-    right: "16%",
-    top: "16%",
-  },
   modal_body: {
     position: "relative",
     width: "40%",
@@ -37,17 +32,19 @@ function URLEncoded(props) {
   const classes = useStyles();
   const [open_modal, set_open_modal] = useState(false);
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [openElem, setOpenElem] = React.useState(null);
+  // this is used for param_type change menu
+  const [param_type_anchor_elem, set_param_type_anchor_elem] =
+    React.useState(null);
+  const [param_type_open_elem, set_param_type_open_elem] = React.useState(null);
 
-  const handleClick = (e, i) => {
-    setAnchorEl(e.currentTarget);
-    setOpenElem(i);
+  const param_type_open = (e, i) => {
+    set_param_type_anchor_elem(e.currentTarget);
+    set_param_type_open_elem(i);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
-    setOpenElem(null);
+  const param_type_close = () => {
+    set_param_type_anchor_elem(null);
+    set_param_type_open_elem(null);
   };
 
   const param_type_change = (i, param_type) => {
@@ -172,20 +169,20 @@ function URLEncoded(props) {
         >
           <IconButton
             onClick={(e) => {
-              handleClick(e, i);
+              param_type_open(e, i);
             }}
           >
             <MoreVertIcon />
           </IconButton>
           <Menu
-            anchorEl={anchorEl}
+            anchorEl={param_type_anchor_elem}
             keepMounted
-            open={openElem === i}
-            onClose={handleClose}
+            open={param_type_open_elem === i}
+            onClose={param_type_close}
           >
             <MenuItem
               onClick={() => {
-                handleClose();
+                param_type_close();
                 param_type_change(i, "text");
               }}
             >
@@ -193,7 +190,7 @@ function URLEncoded(props) {
             </MenuItem>
             <MenuItem
               onClick={() => {
-                handleClose();
+                param_type_close();
                 param_type_change(i, "multiline");
               }}
             >

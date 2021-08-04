@@ -7,11 +7,13 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Button from "@material-ui/core/Button";
 import Modal from "@material-ui/core/Modal";
+
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import PublishIcon from "@material-ui/icons/Publish";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
+
 import { makeStyles } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
@@ -30,19 +32,26 @@ const useStyles = makeStyles((theme) => ({
 function Multipart(props) {
   const classes = useStyles();
   const [open_modal, set_open_modal] = useState(false);
-  const [file_ref, set_file_ref] = useState([null]);
+  const [file_ref, set_file_ref] = useState(
+    props.state.map((obj) => {
+      if (obj.type === "file") return React.createRef();
+      else return null;
+    }),
+  );
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [openElem, setOpenElem] = React.useState(null);
+  // this is used for param_type change menu
+  const [param_type_anchor_elem, set_param_type_anchor_elem] =
+    React.useState(null);
+  const [param_type_open_elem, set_param_type_open_elem] = React.useState(null);
 
-  const handleClick = (e, i) => {
-    setAnchorEl(e.currentTarget);
-    setOpenElem(i);
+  const param_type_open = (e, i) => {
+    set_param_type_anchor_elem(e.currentTarget);
+    set_param_type_open_elem(i);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
-    setOpenElem(null);
+  const param_type_close = () => {
+    set_param_type_anchor_elem(null);
+    set_param_type_open_elem(null);
   };
 
   const param_type_change = (i, param_type) => {
@@ -216,20 +225,20 @@ function Multipart(props) {
         >
           <IconButton
             onClick={(e) => {
-              handleClick(e, i);
+              param_type_open(e, i);
             }}
           >
             <MoreVertIcon />
           </IconButton>
           <Menu
-            anchorEl={anchorEl}
+            anchorEl={param_type_anchor_elem}
             keepMounted
-            open={openElem === i}
-            onClose={handleClose}
+            open={param_type_open_elem === i}
+            onClose={param_type_close}
           >
             <MenuItem
               onClick={() => {
-                handleClose();
+                param_type_close();
                 param_type_change(i, "text");
               }}
             >
@@ -237,7 +246,7 @@ function Multipart(props) {
             </MenuItem>
             <MenuItem
               onClick={() => {
-                handleClose();
+                param_type_close();
                 param_type_change(i, "multiline");
               }}
             >
@@ -245,7 +254,7 @@ function Multipart(props) {
             </MenuItem>
             <MenuItem
               onClick={() => {
-                handleClose();
+                param_type_close();
                 param_type_change(i, "file");
               }}
             >

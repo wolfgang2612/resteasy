@@ -12,6 +12,12 @@ import Accordion from "@material-ui/core/Accordion";
 import AccordionSummary from "@material-ui/core/AccordionSummary";
 import AccordionDetails from "@material-ui/core/AccordionDetails";
 import Divider from "@material-ui/core/Divider";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
+
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import SendIcon from "@material-ui/icons/Send";
 
@@ -26,6 +32,7 @@ function Request(props) {
   const [req_type, set_req_type] = useState("");
   const [req_url, set_req_url] = useState("");
   const [body_type, set_body_type] = useState("multipart");
+  const [body_type_limbo, set_body_type_limbo] = useState(null);
   const [multipart, set_multipart] = useState([
     { name: "", value: "", type: "text" },
   ]);
@@ -38,6 +45,8 @@ function Request(props) {
     snackbar_open: false,
   });
   const [parse_timeout, set_parse_timeout] = useState(null);
+  const [body_type_change_confirm, set_body_type_change_confirm] =
+    React.useState(false);
 
   const req_type_change = (e) => {
     set_req_type(e.target.value);
@@ -48,7 +57,21 @@ function Request(props) {
   };
 
   const body_type_change = (e) => {
-    if (e.target.value) set_body_type(e.target.value);
+    if (e.target.value) {
+      set_body_type_limbo(e.target.value);
+      confirm_open();
+    }
+  };
+
+  const confirm_open = () => {
+    set_body_type_change_confirm(true);
+  };
+
+  const confirm_close = (change) => {
+    set_body_type_change_confirm(false);
+    if (change === "yes") {
+      set_body_type(body_type_limbo);
+    }
   };
 
   const multipart_handler = (e, i, name_or_value, action_type, param_type) => {
@@ -133,29 +156,62 @@ function Request(props) {
   };
 
   const get_body_jsx = () => {
-    let return_body;
+    let return_body = [];
     switch (body_type) {
       case "multipart":
-        return_body = (
-          <Multipart state={multipart} handler={multipart_handler} />
+        return_body.push(
+          <Multipart state={multipart} handler={multipart_handler} />,
         );
         break;
 
       case "urlencoded":
-        return_body = (
-          <URLEncoded state={urlencoded} handler={urlencoded_handler} />
+        return_body.push(
+          <URLEncoded state={urlencoded} handler={urlencoded_handler} />,
         );
         break;
 
       case "json":
-        return_body = <TextJson state={textjson} handler={textjson_handler} />;
+        return_body.push(
+          <TextJson state={textjson} handler={textjson_handler} />,
+        );
         break;
 
       default:
-        return_body = "under construction";
+        return_body.push("under construction");
         break;
     }
 
+    return_body.push(
+      <Dialog open={body_type_change_confirm} onClose={confirm_close}>
+        <DialogTitle>{"Change body type?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Changing the body type might result in loss of some input data. (For
+            example, if any file uploads have been done, they will be reset and
+            need to be reuploaded.)
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              confirm_close("no");
+            }}
+            color="primary"
+          >
+            No
+          </Button>
+          <Button
+            onClick={() => {
+              confirm_close("yes");
+            }}
+            color="primary"
+            autoFocus
+          >
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>,
+    );
     return return_body;
   };
 
