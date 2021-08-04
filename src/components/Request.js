@@ -129,13 +129,16 @@ function Request(props) {
           try {
             JSON.parse(e.target.value);
           } catch (error) {
-            set_textjson({ value: e.target.value, error: error.message });
+            set_textjson({
+              value: e.target.value,
+              error: error.message,
+            });
           }
         }, 1500);
         set_parse_timeout(new_parse_timeout);
         break;
 
-      case "stringify":
+      case "beautify":
         if (textjson.error) {
           set_textjson({ ...textjson, snackbar_open: true });
         } else {
@@ -242,6 +245,13 @@ function Request(props) {
           urlencoded_object[obj["name"]] = obj["value"];
         });
         req_data = qs.stringify(urlencoded_object);
+        break;
+
+      case "json":
+        req_config["headers"] = {
+          "Content-Type": "application/json",
+        };
+        req_data = textjson.value;
         break;
 
       default:

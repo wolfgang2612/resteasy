@@ -47,11 +47,11 @@ function TextJson(props) {
         </Alert>
       </Snackbar>
       <Grid item xs={6} justifyContent="space-evenly">
-        <Tooltip title="Stringify" aria-label="stringify">
+        <Tooltip title="Beautify" aria-label="beautify">
           <IconButton
-            aria-label="stringify"
+            aria-label="beautify"
             onClick={() => {
-              props.handler(null, "stringify");
+              props.handler(null, "beautify");
             }}
           >
             <CodeIcon />
