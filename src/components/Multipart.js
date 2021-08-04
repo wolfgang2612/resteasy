@@ -3,25 +3,18 @@ import React, { useState } from "react";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 import IconButton from "@material-ui/core/IconButton";
+import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Button from "@material-ui/core/Button";
-import FormControl from "@material-ui/core/FormControl";
-import Select from "@material-ui/core/Select";
 import Modal from "@material-ui/core/Modal";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import PublishIcon from "@material-ui/icons/Publish";
+import MoreVertIcon from "@material-ui/icons/MoreVert";
 import { makeStyles } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
-  select_root: {
-    paddingBottom: "2px",
-  },
-  select_icon: {
-    right: "16%",
-    top: "16%",
-  },
   modal_body: {
     position: "relative",
     width: "40%",
@@ -36,10 +29,23 @@ const useStyles = makeStyles((theme) => ({
 
 function Multipart(props) {
   const classes = useStyles();
-  const [open, set_open] = useState(false);
+  const [open_modal, set_open_modal] = useState(false);
   const [file_ref, set_file_ref] = useState([null]);
 
-  const param_type_change = (e, i, param_type) => {
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [openElem, setOpenElem] = React.useState(null);
+
+  const handleClick = (e, i) => {
+    setAnchorEl(e.currentTarget);
+    setOpenElem(i);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+    setOpenElem(null);
+  };
+
+  const param_type_change = (i, param_type) => {
     if (
       i !== undefined &&
       param_type !== undefined &&
@@ -56,14 +62,10 @@ function Multipart(props) {
     } else if (param_type !== "file" && !file_ref[i]) {
       // changing between text and multiline
       let cur_value = props.state[i].value;
-      if (param_type === "multiline" && cur_value)
-        props.handler(
-          { target: { value: cur_value.replaceAll("\n", "") } },
-          i,
-          "value",
-          "change",
-        );
-      else
+      if (param_type === "text" && cur_value) {
+        let new_value = cur_value.replaceAll("\n", "");
+        props.handler({ target: { value: new_value } }, i, "value", "change");
+      } else
         props.handler({ target: { value: cur_value } }, i, "value", "change");
     } else {
       // changing to file
@@ -101,16 +103,16 @@ function Multipart(props) {
               fullWidth
               style={{ marginTop: "7px" }}
               onClick={() => {
-                set_open(true);
+                set_open_modal(true);
               }}
               endIcon={<EditIcon />}
             >
               {edit_text}
             </Button>
             <Modal
-              open={open}
+              open={open_modal}
               onClose={() => {
-                set_open(false);
+                set_open_modal(false);
               }}
             >
               <div className={classes.modal_body}>
@@ -212,35 +214,44 @@ function Multipart(props) {
           alignContent={obj["type"] !== "text" ? "center" : "center"}
           style={{ marginTop: "10px" }}
         >
-          <FormControl>
-            <Select
-              id={i + "param_type"}
-              value=""
-              classes={{ root: classes.select_root, icon: classes.select_icon }}
+          <IconButton
+            onClick={(e) => {
+              handleClick(e, i);
+            }}
+          >
+            <MoreVertIcon />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            keepMounted
+            open={openElem === i}
+            onClose={handleClose}
+          >
+            <MenuItem
+              onClick={() => {
+                handleClose();
+                param_type_change(i, "text");
+              }}
             >
-              <MenuItem
-                onClick={(e) => {
-                  param_type_change(e, i, "text");
-                }}
-              >
-                Text
-              </MenuItem>
-              <MenuItem
-                onClick={(e) => {
-                  param_type_change(e, i, "multiline");
-                }}
-              >
-                Multiline
-              </MenuItem>
-              <MenuItem
-                onClick={(e) => {
-                  param_type_change(e, i, "file");
-                }}
-              >
-                File
-              </MenuItem>
-            </Select>
-          </FormControl>
+              Text
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                handleClose();
+                param_type_change(i, "multiline");
+              }}
+            >
+              Multiline
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                handleClose();
+                param_type_change(i, "file");
+              }}
+            >
+              File
+            </MenuItem>
+          </Menu>
         </Grid>
         <Grid item xs={1}>
           <IconButton
