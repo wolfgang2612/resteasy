@@ -27,6 +27,7 @@ import qs from "qs";
 import Multipart from "./Multipart";
 import URLEncoded from "./URLEncoded";
 import TextJson from "./TextJson";
+import TextOther from "./TextOther";
 
 function Request(props) {
   const [req_type, set_req_type] = useState("");
@@ -44,6 +45,7 @@ function Request(props) {
     error: null,
     snackbar_open: false,
   });
+  const [textother, set_textother] = useState("");
   const [parse_timeout, set_parse_timeout] = useState(null);
   const [body_type_change_confirm, set_body_type_change_confirm] =
     React.useState(false);
@@ -158,6 +160,10 @@ function Request(props) {
     }
   };
 
+  const textother_handler = (e) => {
+    set_textother(e.target.value);
+  };
+
   const get_body_jsx = () => {
     let return_body = [];
     switch (body_type) {
@@ -179,6 +185,11 @@ function Request(props) {
         );
         break;
 
+      case "other":
+        return_body.push(
+          <TextOther state={textother} handler={textother_handler} />,
+        );
+        break;
       default:
         return_body.push("under construction");
         break;
@@ -254,6 +265,12 @@ function Request(props) {
         req_data = textjson.value;
         break;
 
+      case "other":
+        req_config["headers"] = {
+          "Content-Type": "text/plain",
+        };
+        req_data = textother;
+        break;
       default:
         break;
     }
