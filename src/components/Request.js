@@ -17,6 +17,7 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
+import Chip from "@material-ui/core/Chip";
 
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import SendIcon from "@material-ui/icons/Send";
@@ -28,8 +29,11 @@ import Multipart from "./Multipart";
 import URLEncoded from "./URLEncoded";
 import TextJson from "./TextJson";
 import TextOther from "./TextOther";
+import File from "./File";
+import Headers from "./Headers";
 
 function Request(props) {
+  // STATES
   const [req_type, set_req_type] = useState("");
   const [req_url, set_req_url] = useState("");
   const [body_type, set_body_type] = useState("multipart");
@@ -46,10 +50,15 @@ function Request(props) {
     snackbar_open: false,
   });
   const [textother, set_textother] = useState("");
+  const [file, set_file] = useState("");
   const [parse_timeout, set_parse_timeout] = useState(null);
   const [body_type_change_confirm, set_body_type_change_confirm] =
-    React.useState(false);
+    useState(false);
+  const [headers, set_headers] = useState([
+    { name: "Content-Type", value: "multipart/form-data" },
+  ]);
 
+  // FUNCTIONS
   const req_type_change = (e) => {
     set_req_type(e.target.value);
   };
@@ -58,10 +67,56 @@ function Request(props) {
     set_req_url(e.target.value);
   };
 
+  const ctype_change = (body_type, custom) => {
+    let ctype_present = false;
+    let cur_headers = [...headers];
+    let ctype_index;
+
+    cur_headers.forEach((obj, i) => {
+      if (obj["name"] === "Content-Type") {
+        ctype_present = true;
+        ctype_index = i;
+      }
+    });
+    if (!ctype_present) {
+      cur_headers.push({ name: "Content-Type", value: "" });
+      ctype_index = cur_headers.length - 1;
+    }
+
+    switch (body_type) {
+      case "multipart":
+        cur_headers[ctype_index]["value"] = "multipart/form-data";
+        break;
+      case "urlencoded":
+        cur_headers[ctype_index]["value"] = "application/x-www-form-urlencoded";
+        break;
+      case "json":
+        cur_headers[ctype_index]["value"] = "application/json";
+        break;
+      case "other":
+        cur_headers[ctype_index]["value"] = "text/plain";
+        break;
+      case "nobody":
+        cur_headers.splice(ctype_index, 1);
+        break;
+      case "custom":
+        cur_headers[ctype_index]["value"] = custom;
+        break;
+      default:
+        break;
+    }
+    set_headers(cur_headers);
+  };
+
   const body_type_change = (e) => {
     if (e.target.value) {
-      set_body_type_limbo(e.target.value);
-      confirm_open();
+      if (body_type === "multipart" || body_type === "file") {
+        set_body_type_limbo(e.target.value);
+        confirm_open();
+      } else {
+        set_body_type(e.target.value);
+        ctype_change(e.target.value);
+      }
     }
   };
 
@@ -73,9 +128,30 @@ function Request(props) {
     set_body_type_change_confirm(false);
     if (change === "yes") {
       set_body_type(body_type_limbo);
+      ctype_change(body_type_limbo);
     }
   };
 
+  const body_type_map = (btype) => {
+    switch (btype) {
+      case "multipart":
+        return "Multipart form";
+      case "urlencoded":
+        return "Form URL encoded";
+      case "json":
+        return "JSON";
+      case "other":
+        return "Other";
+      case "file":
+        return "File";
+      case "nobody":
+        return "No body";
+      default:
+        break;
+    }
+  };
+
+  // BODY HANDLERS
   const multipart_handler = (e, i, name_or_value, action_type, param_type) => {
     let cur_multipart = [...multipart];
 
@@ -164,6 +240,42 @@ function Request(props) {
     set_textother(e.target.value);
   };
 
+  const file_handler = (value, type) => {
+    switch (type) {
+      case "value_change":
+        set_file(value);
+        break;
+      case "header_change":
+        ctype_change("custom", value);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // HEADER HANDLER
+  const header_handler = (e, i, name_or_value, type) => {
+    let cur_headers = [...headers];
+
+    switch (type) {
+      case "change":
+        cur_headers[i][name_or_value] = e.target.value;
+        break;
+      case "add":
+        cur_headers.push({ name: "", value: "" });
+        break;
+      case "delete":
+        cur_headers.splice(i, 1);
+        break;
+
+      default:
+        break;
+    }
+
+    set_headers(cur_headers);
+  };
+
+  // get body jsx from components
   const get_body_jsx = () => {
     let return_body = [];
     switch (body_type) {
@@ -190,56 +302,37 @@ function Request(props) {
           <TextOther state={textother} handler={textother_handler} />,
         );
         break;
+      case "file":
+        return_body.push(<File state={file} handler={file_handler} />);
+        break;
+      case "nobody":
+        return_body.push(<div></div>);
+        break;
       default:
         return_body.push("under construction");
         break;
     }
 
-    return_body.push(
-      <Dialog open={body_type_change_confirm} onClose={confirm_close}>
-        <DialogTitle>{"Change body type?"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Changing the body type might result in loss of some input data. (For
-            example, if any file uploads have been done, they will be reset and
-            need to be reuploaded.)
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              confirm_close("no");
-            }}
-            color="primary"
-          >
-            No
-          </Button>
-          <Button
-            onClick={() => {
-              confirm_close("yes");
-            }}
-            color="primary"
-            autoFocus
-          >
-            Yes
-          </Button>
-        </DialogActions>
-      </Dialog>,
-    );
     return return_body;
   };
 
+  // set headers and data when submit is clicked
   const handle_submit = () => {
     let req_config = {};
     req_config["method"] = req_type;
     req_config["url"] = req_url;
 
+    let req_headers = {};
+    for (let index = 0; index < headers.length; index++) {
+      //let hname = `'${headers[index]["name"]}'`;
+      req_headers[headers[index]["name"]] = headers[index]["value"];
+    }
+    req_config["headers"] = req_headers;
+
     var req_data;
 
     switch (body_type) {
       case "multipart":
-        req_config["headers"] = { "Content-Type": "multipart/form-data" };
-
         req_data = new FormData();
         multipart.forEach((element) => {
           req_data.append(element.name, element.value);
@@ -247,10 +340,6 @@ function Request(props) {
         break;
 
       case "urlencoded":
-        req_config["headers"] = {
-          "Content-Type": "application/x-www-form-urlencoded",
-        };
-
         let urlencoded_object = {};
         urlencoded.forEach((obj) => {
           urlencoded_object[obj["name"]] = obj["value"];
@@ -259,17 +348,16 @@ function Request(props) {
         break;
 
       case "json":
-        req_config["headers"] = {
-          "Content-Type": "application/json",
-        };
         req_data = textjson.value;
         break;
 
       case "other":
-        req_config["headers"] = {
-          "Content-Type": "text/plain",
-        };
         req_data = textother;
+        break;
+      case "file":
+        req_data = file;
+        break;
+      case "nobody":
         break;
       default:
         break;
@@ -327,7 +415,12 @@ function Request(props) {
       <Grid item xs={12}>
         <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            Body
+            Body{" "}
+            <Chip
+              label={body_type_map(body_type)}
+              variant="outlined"
+              style={{ marginLeft: "10px" }}
+            />
           </AccordionSummary>
           <AccordionDetails>
             <FormControl fullWidth>
@@ -345,8 +438,29 @@ function Request(props) {
                 >
                   Structured
                 </ListSubheader>
-                <MenuItem value="multipart">Multipart form</MenuItem>
-                <MenuItem value="urlencoded">Form URL encoded</MenuItem>
+
+                <MenuItem value="multipart">
+                  {body_type_map("multipart")}
+                  <Chip
+                    label={multipart.length}
+                    variant="outlined"
+                    style={{
+                      marginLeft: "10px",
+                      display: multipart.length ? "inline-flex" : "none",
+                    }}
+                  />
+                </MenuItem>
+                <MenuItem value="urlencoded">
+                  {body_type_map("urlencoded")}
+                  <Chip
+                    label={urlencoded.length}
+                    variant="outlined"
+                    style={{
+                      marginLeft: "10px",
+                      display: urlencoded.length ? "inline-flex" : "none",
+                    }}
+                  />
+                </MenuItem>
                 <Divider />
                 <ListSubheader
                   color="primary"
@@ -355,8 +469,8 @@ function Request(props) {
                 >
                   Text
                 </ListSubheader>
-                <MenuItem value="json">JSON</MenuItem>
-                <MenuItem value="other">Other</MenuItem>
+                <MenuItem value="json">{body_type_map("json")}</MenuItem>
+                <MenuItem value="other">{body_type_map("other")}</MenuItem>
                 <Divider />
                 <ListSubheader
                   color="primary"
@@ -365,13 +479,58 @@ function Request(props) {
                 >
                   Other
                 </ListSubheader>
-                <MenuItem value="file">File</MenuItem>
-                <MenuItem value="nobody">No body</MenuItem>
+                <MenuItem value="file">{body_type_map("file")}</MenuItem>
+                <MenuItem value="nobody">{body_type_map("nobody")}</MenuItem>
               </Select>
               {get_body_jsx()}
             </FormControl>
           </AccordionDetails>
         </Accordion>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            Headers
+            <Chip
+              label={headers.length}
+              variant="outlined"
+              style={{
+                marginLeft: "10px",
+                display: headers.length ? "inline-flex" : "none",
+              }}
+            />
+          </AccordionSummary>
+          <AccordionDetails>
+            <Headers state={headers} handler={header_handler} />
+          </AccordionDetails>
+        </Accordion>
+        <Dialog open={body_type_change_confirm} onClose={confirm_close}>
+          <DialogTitle>{"Change body type?"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Changing the body type might result in loss of some input data.
+              (For example, if any file uploads have been done, they will be
+              reset and need to be reuploaded.)
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => {
+                confirm_close("no");
+              }}
+              color="primary"
+            >
+              No
+            </Button>
+            <Button
+              onClick={() => {
+                confirm_close("yes");
+              }}
+              color="primary"
+              autoFocus
+            >
+              Yes
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Grid>
     </Grid>
   );

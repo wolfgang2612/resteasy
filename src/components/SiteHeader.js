@@ -1,5 +1,5 @@
-function Header() {
+function SiteHeader() {
   return <div style={{ marginBottom: "10px" }}>Header</div>;
 }
 
-export default Header;
+export default SiteHeader;

@@ -2,15 +2,19 @@ import Grid from "@material-ui/core/Grid";
 import Divider from "@material-ui/core/Divider";
 import axios from "axios";
 
-import Header from "./components/Header";
+import Header from "./components/SiteHeader";
 import Request from "./components/Request";
 
 function App() {
   const submit_handler = (req_config) => {
     console.log(req_config);
-    axios(req_config).then((res) => {
-      console.log(res);
-    });
+    axios(req_config)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   return (
