@@ -115,7 +115,10 @@ function Request(props) {
         confirm_open();
       } else {
         set_body_type(e.target.value);
-        ctype_change(e.target.value);
+        //ctype_change(e.target.value);
+        e.target.value === "file"
+          ? ctype_change("custom", "application/octet-stream")
+          : ctype_change(e.target.value);
       }
     }
   };
@@ -267,7 +270,9 @@ function Request(props) {
       case "delete":
         cur_headers.splice(i, 1);
         break;
-
+      case "edit_type":
+        cur_headers = [...name_or_value];
+        break;
       default:
         break;
     }
