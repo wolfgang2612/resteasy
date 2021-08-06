@@ -388,7 +388,10 @@ function Request(props) {
             <MenuItem value="get">GET</MenuItem>
             <MenuItem value="post">POST</MenuItem>
             <MenuItem value="put">PUT</MenuItem>
+            <MenuItem value="patch">PATCH</MenuItem>
             <MenuItem value="delete">DELETE</MenuItem>
+            <MenuItem value="options">OPTIONS</MenuItem>
+            <MenuItem value="head">HEAD</MenuItem>
           </Select>
         </FormControl>
       </Grid>
