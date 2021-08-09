@@ -11,6 +11,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.grey["A100"],
     width: "100%",
     margin: "10px",
+    marginBottom: "20px",
   },
 }));
 
@@ -26,7 +27,7 @@ function SiteHeader() {
         </Grid>
         <Grid container item xs={12} justifyContent="center">
           <Typography variant="h4" gutterBottom align="center">
-            A minimal client to send HTML requests!
+            A minimal client to send HTTP requests!
           </Typography>
         </Grid>
         <Grid container item xs={12} justifyContent="flex-end">

@@ -9,14 +9,22 @@ import Response from "./components/Response";
 
 function App() {
   const [response, set_response] = useState();
+  const [loading, set_loading] = useState(false);
 
   const submit_handler = (req_config) => {
-    console.log(req_config);
+    set_loading(true);
+    let start_time = Date.now();
     axios(req_config)
       .then((res) => {
-        set_response(res);
+        let end_time = Date.now();
+        set_loading(false);
+        set_response({
+          ...res,
+          query_time: end_time - start_time,
+        });
       })
       .catch((error) => {
+        set_loading(false);
         if (error.response) {
           // The request was made and the server responded with a status code
           // that falls out of the range of 2xx
@@ -37,7 +45,7 @@ function App() {
   };
 
   return (
-    <div>
+    <div style={{ marginBottom: "20px" }}>
       <Grid container justifyContent="space-evenly">
         <Grid item xs={12}>
           <Header />
@@ -51,7 +59,7 @@ function App() {
           display={{ xs: "none", md: "block" }}
         />
         <Grid item xs={12} md={5}>
-          <Response response={response} />
+          <Response response={response} loading={loading} />
         </Grid>
       </Grid>
     </div>
