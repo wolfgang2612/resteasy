@@ -24,23 +24,42 @@ function App() {
         });
       })
       .catch((error) => {
+        let end_time = Date.now();
         set_loading(false);
         if (error.response) {
           // The request was made and the server responded with a status code
           // that falls out of the range of 2xx
-          console.log(error.response.data);
-          console.log(error.response.status);
-          console.log(error.response.headers);
+          console.log(error.response);
+          set_response({
+            ...error.response,
+            query_time: end_time - start_time,
+          });
         } else if (error.request) {
           // The request was made but no response was received
           // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
           // http.ClientRequest in node.js
           console.log(error.request);
+          set_response({
+            status: "-",
+            headers: { ...error.config.headers, "content-type": "text/plain" },
+            data: error.message,
+            config: error.config,
+            query_time: end_time - start_time,
+          });
         } else {
           // Something happened in setting up the request that triggered an Error
           console.log("Error", error.message);
+          set_response({
+            status: "-",
+            headers: error.config.headers,
+            data:
+              "Something happened in setting up the request that triggered an Error: " +
+              error.message,
+            config: error.config,
+            query_time: end_time - start_time,
+          });
         }
-        console.log(error.config);
+        console.log(error.toJSON());
       });
   };
 
