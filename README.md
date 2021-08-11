@@ -1,6 +1,11 @@
 # Visit the site!
 
-[Europe](https://rest-ashu.herokuapp.com/)
-[USA](https://rest-easy-ashu.herokuapp.com/)
+https://master.d16gch5vfn30fe.amplifyapp.com/
 
-# This app was created using create-react-app
+# The project is still under development. 
+## Roadmap
+1. Add more request options (auth, query string)
+2. Add more text editing options (XML, YAML, EDN, etc.)
+
+## Contact
+Contact me at ashutoshepsilon@gmail.com
