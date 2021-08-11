@@ -16,6 +16,9 @@ import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell";
 import Paper from "@material-ui/core/Paper";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import Button from "@material-ui/core/Button";
+
+import SaveIcon from "@material-ui/icons/Save";
 
 import PropTypes from "prop-types";
 import SwipeableViews from "react-swipeable-views";
@@ -128,9 +131,24 @@ function Response(props) {
         );
         break;
       default:
+        let data = new Blob([res.data], { type: ctype });
+        let data_url = window.URL.createObjectURL(data);
+        let download_button = (
+          <Button
+            variant="contained"
+            color="secondary"
+            href={data_url}
+            endIcon={<SaveIcon />}
+            download={"data" + new Date().toLocaleString()}
+            fullWidth
+          >
+            Download
+          </Button>
+        );
         return_body = [];
-        return_body.push("Data is not JSON or text, raw data: ");
+        return_body.push("Data is not JSON or text, click to download: ");
         return_body.push(<br />);
+        return_body.push(download_button);
         return_body.push(<hr />);
         return_body.push(res.data);
         break;
