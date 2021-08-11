@@ -129,13 +129,7 @@ function Response(props) {
         break;
       default:
         return_body = [];
-        return_body.push(
-          "Data is not JSON or text, click the button to download the response data. ",
-        );
-        return_body.push(<br />);
-        return_body.push(
-          "(If you are expecting a file as a response, be sure to put the Content-disposition header = attachment for automatic triggering of file download.)",
-        );
+        return_body.push("Data is not JSON or text, raw data: ");
         return_body.push(<br />);
         return_body.push(<hr />);
         return_body.push(res.data);
