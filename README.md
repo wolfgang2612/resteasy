@@ -1,6 +1,6 @@
 # Visit the site!
 
-https://master.d16gch5vfn30fe.amplifyapp.com/
+https://resteasy-wolfgang.github.io/
 
 # The project is still under development. 
 ## Roadmap
