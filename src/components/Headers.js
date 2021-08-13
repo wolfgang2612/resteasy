@@ -4,6 +4,7 @@ import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 import IconButton from "@material-ui/core/IconButton";
 import Button from "@material-ui/core/Button";
+import Checkbox from "@material-ui/core/Checkbox";
 
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -22,6 +23,7 @@ function Headers(props) {
           return {
             name: pair[0].replaceAll(" ", ""),
             value: pair[1].replaceAll(" ", ""),
+            selected: true,
           };
         } else return { name: "", value: "" };
       });
@@ -31,8 +33,10 @@ function Headers(props) {
     } else {
       let bulk_text = "";
       props.state.forEach((obj, i) => {
-        bulk_text += obj.name + ": " + obj.value;
-        if (i !== props.state.length - 1) bulk_text += "\n";
+        if (obj.selected) {
+          bulk_text += obj.name + ": " + obj.value;
+          if (i !== props.state.length - 1) bulk_text += "\n";
+        }
       });
       set_bulk_value(bulk_text);
     }
@@ -65,7 +69,21 @@ function Headers(props) {
           key={i}
           spacing={1}
         >
-          <Grid item xs={5}>
+          <Checkbox
+            style={{ marginTop: "15px" }}
+            color="default"
+            size="small"
+            checked={obj.selected}
+            onChange={(e) => {
+              props.handler(
+                { target: { value: e.target.checked } },
+                i,
+                "selected",
+                "change",
+              );
+            }}
+          />
+          <Grid item xs={4}>
             <TextField
               label="Name"
               id={"header_name_" + i}
@@ -75,7 +93,7 @@ function Headers(props) {
               }}
             />
           </Grid>
-          <Grid item xs={5}>
+          <Grid item xs={4}>
             <TextField
               label="Value"
               id={"header_value_" + i}

@@ -7,6 +7,7 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Button from "@material-ui/core/Button";
 import Modal from "@material-ui/core/Modal";
+import Checkbox from "@material-ui/core/Checkbox";
 
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -142,7 +143,21 @@ function URLEncoded(props) {
         key={i}
         spacing={1}
       >
-        <Grid item xs={5}>
+        <Checkbox
+          style={{ marginTop: "15px" }}
+          color="default"
+          size="small"
+          checked={obj.selected}
+          onChange={(e) => {
+            props.handler(
+              { target: { value: e.target.checked } },
+              i,
+              "selected",
+              "change",
+            );
+          }}
+        />
+        <Grid item xs={4}>
           <TextField
             label="Name"
             id={"urlencoded_name_" + i}
@@ -155,7 +170,7 @@ function URLEncoded(props) {
         <Grid
           container
           item
-          xs={5}
+          xs={4}
           alignContent={obj["type"] !== "text" ? "center" : ""}
         >
           {get_param(i, obj.value)}

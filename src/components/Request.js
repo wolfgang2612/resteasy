@@ -39,10 +39,10 @@ function Request(props) {
   const [body_type, set_body_type] = useState("multipart");
   const [body_type_limbo, set_body_type_limbo] = useState(null);
   const [multipart, set_multipart] = useState([
-    { name: "", value: "", type: "text" },
+    { name: "", value: "", type: "text", selected: true },
   ]);
   const [urlencoded, set_urlencoded] = useState([
-    { name: "", value: "", type: "text" },
+    { name: "", value: "", type: "text", selected: true },
   ]);
   const [textjson, set_textjson] = useState({
     value: '{"id": "12"}',
@@ -55,7 +55,7 @@ function Request(props) {
   const [body_type_change_confirm, set_body_type_change_confirm] =
     useState(false);
   const [headers, set_headers] = useState([
-    { name: "Content-Type", value: "multipart/form-data" },
+    { name: "Content-Type", value: "multipart/form-data", selected: true },
   ]);
 
   // FUNCTIONS
@@ -115,7 +115,6 @@ function Request(props) {
         confirm_open();
       } else {
         set_body_type(e.target.value);
-        //ctype_change(e.target.value);
         e.target.value === "file"
           ? ctype_change("custom", "application/octet-stream")
           : ctype_change(e.target.value);
@@ -155,15 +154,20 @@ function Request(props) {
   };
 
   // BODY HANDLERS
-  const multipart_handler = (e, i, name_or_value, action_type, param_type) => {
+  const multipart_handler = (e, i, param, action_type, param_type) => {
     let cur_multipart = [...multipart];
 
     switch (action_type) {
       case "change":
-        cur_multipart[i][name_or_value] = e.target.value;
+        cur_multipart[i][param] = e.target.value;
         break;
       case "add":
-        cur_multipart.push({ name: "", value: "", type: "text" });
+        cur_multipart.push({
+          name: "",
+          value: "",
+          type: "text",
+          selected: true,
+        });
         break;
       case "delete":
         cur_multipart.splice(i, 1);
@@ -186,7 +190,12 @@ function Request(props) {
         cur_urlencoded[i][name_or_value] = e.target.value;
         break;
       case "add":
-        cur_urlencoded.push({ name: "", value: "", type: "text" });
+        cur_urlencoded.push({
+          name: "",
+          value: "",
+          type: "text",
+          selected: true,
+        });
         break;
       case "delete":
         cur_urlencoded.splice(i, 1);
@@ -265,7 +274,7 @@ function Request(props) {
         cur_headers[i][name_or_value] = e.target.value;
         break;
       case "add":
-        cur_headers.push({ name: "", value: "" });
+        cur_headers.push({ name: "", value: "", selected: true });
         break;
       case "delete":
         cur_headers.splice(i, 1);
@@ -278,6 +287,58 @@ function Request(props) {
     }
 
     set_headers(cur_headers);
+  };
+
+  // set headers and data when submit is clicked
+  const handle_submit = () => {
+    let req_config = {};
+    req_config["method"] = req_type;
+    req_config["url"] = req_url;
+
+    let req_headers = {};
+    for (let index = 0; index < headers.length; index++) {
+      if (headers[index]["selected"])
+        req_headers[headers[index]["name"]] = headers[index]["value"];
+    }
+    req_config["headers"] = req_headers;
+
+    var req_data;
+
+    switch (body_type) {
+      case "multipart":
+        req_data = new FormData();
+        multipart.forEach((obj) => {
+          if (obj.selected) req_data.append(obj.name, obj.value);
+        });
+        break;
+
+      case "urlencoded":
+        let urlencoded_object = {};
+        urlencoded.forEach((obj) => {
+          if (obj.selected) urlencoded_object[obj["name"]] = obj["value"];
+        });
+        req_data = qs.stringify(urlencoded_object);
+        break;
+
+      case "json":
+        req_data = textjson.value;
+        break;
+
+      case "other":
+        req_data = textother;
+        break;
+      case "file":
+        req_data = file;
+        break;
+      case "nobody":
+        break;
+      default:
+        break;
+    }
+
+    req_config["data"] = req_data;
+
+    props.handler(req_config);
   };
 
   // get body jsx from components
@@ -319,58 +380,6 @@ function Request(props) {
     }
 
     return return_body;
-  };
-
-  // set headers and data when submit is clicked
-  const handle_submit = () => {
-    let req_config = {};
-    req_config["method"] = req_type;
-    req_config["url"] = req_url;
-
-    let req_headers = {};
-    for (let index = 0; index < headers.length; index++) {
-      //let hname = `'${headers[index]["name"]}'`;
-      req_headers[headers[index]["name"]] = headers[index]["value"];
-    }
-    req_config["headers"] = req_headers;
-
-    var req_data;
-
-    switch (body_type) {
-      case "multipart":
-        req_data = new FormData();
-        multipart.forEach((element) => {
-          req_data.append(element.name, element.value);
-        });
-        break;
-
-      case "urlencoded":
-        let urlencoded_object = {};
-        urlencoded.forEach((obj) => {
-          urlencoded_object[obj["name"]] = obj["value"];
-        });
-        req_data = qs.stringify(urlencoded_object);
-        break;
-
-      case "json":
-        req_data = textjson.value;
-        break;
-
-      case "other":
-        req_data = textother;
-        break;
-      case "file":
-        req_data = file;
-        break;
-      case "nobody":
-        break;
-      default:
-        break;
-    }
-
-    req_config["data"] = req_data;
-
-    props.handler(req_config);
   };
 
   return (
